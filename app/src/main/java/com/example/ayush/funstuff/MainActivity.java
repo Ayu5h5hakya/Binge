@@ -3,14 +3,16 @@ package com.example.ayush.funstuff;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,44 +21,58 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.orm.SugarContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView textView;
     ArrayList<String> seriesnames;
     EditText editText;
+    RecyclerView recyclerView;
+    ImageView imageView;
+    Subscription subscription;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SugarContext.init(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        textView = (TextView) findViewById(R.id.response);
         editText = (EditText) findViewById(R.id.namequery);
-        editText.addTextChangedListener(textWatcher);
+        recyclerView = (RecyclerView) findViewById(R.id.rv);
+        imageView = (ImageView) findViewById(R.id.subscribed);
+
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(llm);
         seriesnames = new ArrayList<>();
+        recyclerView.setAdapter(new Adapter(this, seriesnames));
+        editText.addTextChangedListener(textWatcher);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 {
-
+                    String temp = "";
+                    Iterator<Subscription> subscriptionIterator = Subscription.findAll(Subscription.class);
+                    while (subscriptionIterator.hasNext())
+                    {
+                        subscription = subscriptionIterator.next();
+                        temp+=subscription.nameOfSeries;
+                    }
+                    Toast.makeText(getBaseContext(),temp,Toast.LENGTH_SHORT).show();
 
                 }
             }
         });
-
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -73,10 +89,10 @@ public class MainActivity extends AppCompatActivity {
                 seriesnames.clear();
                 updateList(processedquery);
             }
-            else
-            {
-                textView.setText("");
-            }
+//            else
+//            {
+//                textView.setText("");
+//            }
 
         }
 
@@ -118,6 +134,12 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SugarContext.terminate();
+    }
+
     private void updateList(String query)
     {
         String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+query;
@@ -127,9 +149,11 @@ public class MainActivity extends AppCompatActivity {
         }
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
-            public void onResponse(String response) {
+            public void onResponse(String response)
+            {
                 JSONObject jsonObject=null;
-                try {
+                try
+                {
                     jsonObject = XML.toJSONObject(response);
                     //Toast.makeText(getBaseContext(),""+jsonObject.getString("Data").toString(),Toast.LENGTH_SHORT).show();
                     if(jsonObject.getString("Data").toString().length()!=0)
@@ -143,17 +167,20 @@ public class MainActivity extends AppCompatActivity {
                             seriesjson="["+seriesjson+"]";
                         }
                         jsonArray = new JSONArray(seriesjson);
+
                         for (int i=0;i<jsonArray.length();++i)
                         {
                             jsonObject = jsonArray.getJSONObject(i);
                             seriesnames.add(jsonObject.getString("SeriesName"));
                         }
-                        textView.setText(seriesnames.toString());
+                        recyclerView.setAdapter(new Adapter(getBaseContext(), seriesnames));
+                        //
+                       // textView.setText(seriesnames.toString());
                     }
-                    else
-                    {
-                        textView.setText("");
-                    }
+                    //else
+                    //{
+                     //   textView.setText("");
+                    //}
                 }
                 catch (JSONException e) {e.printStackTrace();}
 
@@ -165,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         Volley.newRequestQueue(this).add(stringRequest);
+       // Toast.makeText(getBaseContext(), "MainActivity:" + seriesnames.size(), Toast.LENGTH_SHORT).show();
     }
 
 }
