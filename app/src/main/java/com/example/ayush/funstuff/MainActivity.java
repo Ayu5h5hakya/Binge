@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -21,7 +20,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.orm.SugarContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +27,7 @@ import org.json.JSONObject;
 import org.json.XML;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SugarContext.init(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -61,14 +58,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 {
-                    String temp = "";
-                    Iterator<Subscription> subscriptionIterator = Subscription.findAll(Subscription.class);
-                    while (subscriptionIterator.hasNext())
+                    String temp="";
+                    List<Subscription> subscriptions = Subscription.listAll(Subscription.class);
+                    for (int i=0;i<subscriptions.size();++i)
                     {
-                        subscription = subscriptionIterator.next();
-                        temp+=subscription.nameOfSeries;
+                        temp+=subscriptions.get(i).nameOfSeries+"\n";
                     }
-                    Toast.makeText(getBaseContext(),temp,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(),""+temp,Toast.LENGTH_SHORT).show();
 
                 }
             }
@@ -137,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SugarContext.terminate();
     }
 
     private void updateList(String query)
