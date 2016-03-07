@@ -7,10 +7,11 @@ import com.orm.SugarRecord;
  */
 public class Subscription extends SugarRecord<Subscription> {
     public String nameOfSeries;
+    public Long series_id;
 
     public Subscription(){}
-    public Subscription(String nameOfSeries)
+    public Subscription(String nameOfSeries,Long series_id)
     {
-        this.nameOfSeries = nameOfSeries;
+        this.nameOfSeries = nameOfSeries;this.series_id=series_id;
     }
 }

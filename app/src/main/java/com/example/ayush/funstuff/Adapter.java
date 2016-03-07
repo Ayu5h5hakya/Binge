@@ -18,13 +18,14 @@ import java.util.Collections;
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     LayoutInflater layoutInflater;
     ArrayList<String> seriesnames;
+    ArrayList<Long> seriesids;
     Context context;
     Subscription subscription;
-    public Adapter(Context context,ArrayList<String> seriesnames){
+    public Adapter(Context context,ArrayList<String> seriesnames,ArrayList<Long> series_ids){
         layoutInflater = LayoutInflater.from(context);
         this.seriesnames = seriesnames;
         this.context = context;
-
+        this.seriesids = series_ids;
     }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -52,8 +53,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            //Toast.makeText(context,""+textView.getText(),Toast.LENGTH_SHORT).show();
-            subscription = new Subscription(textView.getText().toString());
+            subscription = new Subscription(textView.getText().toString(),seriesids.get(getAdapterPosition()));
             subscription.save();
         }
     }

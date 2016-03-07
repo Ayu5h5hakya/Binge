@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -32,6 +34,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> seriesnames;
+    ArrayList<Long> series_ids;
     EditText editText;
     RecyclerView recyclerView;
     ImageView imageView;
@@ -52,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
         seriesnames = new ArrayList<>();
-        recyclerView.setAdapter(new Adapter(this, seriesnames));
+        series_ids = new ArrayList<>();
+        recyclerView.setAdapter(new Adapter(this, seriesnames,series_ids));
         editText.addTextChangedListener(textWatcher);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,9 +66,10 @@ public class MainActivity extends AppCompatActivity {
                     List<Subscription> subscriptions = Subscription.listAll(Subscription.class);
                     for (int i=0;i<subscriptions.size();++i)
                     {
-                        temp+=subscriptions.get(i).nameOfSeries+"\n";
+                        temp+=subscriptions.get(i).nameOfSeries+"   "+subscriptions.get(i).series_id+"\n";
                     }
                     Toast.makeText(getBaseContext(),""+temp,Toast.LENGTH_SHORT).show();
+
 
                 }
             }
@@ -137,48 +142,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateList(String query)
     {
-        String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+query;
-        if(url.contains(" "))
+        if(query.contains(" "))
         {
-            url=url.replace(' ','+');
+            query=query.replace(' ','+');
         }
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response)
-            {
-                JSONObject jsonObject=null;
-                try
-                {
-                    jsonObject = XML.toJSONObject(response);
-                    //Toast.makeText(getBaseContext(),""+jsonObject.getString("Data").toString(),Toast.LENGTH_SHORT).show();
-                    if(jsonObject.getString("Data").toString().length()!=0)
-                    {
-                        JSONArray jsonArray;
-                        jsonObject = jsonObject.getJSONObject("Data");
-                        String seriesjson = jsonObject.getString("Series");
-                       // Toast.makeText(getBaseContext(),""+seriesjson,Toast.LENGTH_SHORT).show();
-                        if(!seriesjson.contains("["))
-                        {
-                            seriesjson="["+seriesjson+"]";
-                        }
-                        jsonArray = new JSONArray(seriesjson);
+        //String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+query;
+        String url = "http://api.themoviedb.org/3/search/tv?api_key=83ef7189721a67650fe8f404af8cf6aa&query="+query;
 
-                        for (int i=0;i<jsonArray.length();++i)
-                        {
-                            jsonObject = jsonArray.getJSONObject(i);
-                            seriesnames.add(jsonObject.getString("SeriesName"));
-                        }
-                        recyclerView.setAdapter(new Adapter(getBaseContext(), seriesnames));
-                        //
-                       // textView.setText(seriesnames.toString());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, (String)null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    String temp = response.getString("results");
+                    JSONArray jsonArray = new JSONArray(temp);
+                    temp="";
+                    for(int i=0;i<jsonArray.length();++i)
+                    {
+                        response = jsonArray.getJSONObject(i);
+                        seriesnames.add(response.getString("name"));
+                        series_ids.add(response.getLong("id"));
+
                     }
-                    //else
-                    //{
-                     //   textView.setText("");
-                    //}
+                    recyclerView.setAdapter(new Adapter(getBaseContext(), seriesnames,series_ids));
                 }
                 catch (JSONException e) {e.printStackTrace();}
-
             }
         }, new Response.ErrorListener() {
             @Override
@@ -186,8 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        Volley.newRequestQueue(this).add(stringRequest);
-       // Toast.makeText(getBaseContext(), "MainActivity:" + seriesnames.size(), Toast.LENGTH_SHORT).show();
+        Volley.newRequestQueue(this).add(jsonObjectRequest);
     }
 
 }
