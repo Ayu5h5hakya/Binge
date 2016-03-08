@@ -20,12 +20,16 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     ArrayList<String> seriesnames;
     ArrayList<Long> seriesids;
     Context context;
-    Subscription subscription;
+    DatabaseUpdater databaseUpdater=null;
     public Adapter(Context context,ArrayList<String> seriesnames,ArrayList<Long> series_ids){
         layoutInflater = LayoutInflater.from(context);
         this.seriesnames = seriesnames;
         this.context = context;
         this.seriesids = series_ids;
+        if(databaseUpdater==null)
+        {
+            databaseUpdater = new DatabaseUpdater(context);
+        }
     }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -53,8 +57,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            subscription = new Subscription(textView.getText().toString(),seriesids.get(getAdapterPosition()));
-            subscription.save();
+            //Toast.makeText(context,""+seriesids.get(getAdapterPosition()),Toast.LENGTH_SHORT).show();
+            databaseUpdater.update(textView.getText().toString(),seriesids.get(getAdapterPosition()));
         }
     }
 }

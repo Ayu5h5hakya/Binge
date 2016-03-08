@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,13 +19,11 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.XML;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ImageView imageView;
     Subscription subscription;
+    static String api_key = "83ef7189721a67650fe8f404af8cf6aa";
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -66,7 +64,11 @@ public class MainActivity extends AppCompatActivity {
                     List<Subscription> subscriptions = Subscription.listAll(Subscription.class);
                     for (int i=0;i<subscriptions.size();++i)
                     {
-                        temp+=subscriptions.get(i).nameOfSeries+"   "+subscriptions.get(i).series_id+"\n";
+                        temp+=subscriptions.get(i).nameOfSeries+"   "+
+                                subscriptions.get(i).series_id +"   "+
+                                subscriptions.get(i).latest_season+"   "+
+                                subscriptions.get(i).last_episode+"   "+
+                                subscriptions.get(i).last_air_date.toString()+"\n";
                     }
                     Toast.makeText(getBaseContext(),""+temp,Toast.LENGTH_SHORT).show();
 
@@ -88,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 String processedquery=s.toString();
                 seriesnames.clear();
+                series_ids.clear();
                 updateList(processedquery);
             }
 //            else
