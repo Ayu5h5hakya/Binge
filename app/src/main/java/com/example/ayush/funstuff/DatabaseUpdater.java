@@ -25,28 +25,56 @@ import java.util.Locale;
 public class DatabaseUpdater {
     Context context;
     Subscription subscription;
+    Date parsed_date;
     int latest_season;
     int latest_episode;
-    Date date;
+    String date;
 
     DatabaseUpdater(Context context)
     {
         this.context = context;
     }
-    public void update(String series_name,Long series_id){
+    public void update(final String series_name,final Long series_id){
         String url = "http://api.themoviedb.org/3/tv/"+series_id+"?api_key="+MainActivity.api_key;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, (String) null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    latest_season = response.getInt("number_of_seasons");
+                    latest_season=response.getInt("number_of_seasons");
                     String season_info = response.getString("seasons");
                     JSONArray jsonArray = new JSONArray(season_info);
                     JSONObject jsonObject = jsonArray.getJSONObject(jsonArray.length() - 1);
-                    latest_episode = jsonObject.getInt("episode_count");
-                    //Toast.makeText(context,""+latest_episode,Toast.LENGTH_LONG).show();
+                    latest_episode=jsonObject.getInt("episode_count");
+                    getDate(latest_season,latest_episode);
                 }
                 catch (JSONException e) {e.printStackTrace();}
+            }
+
+            public void getDate(final int latest_season, final int latest_episode)
+            {
+                String url = "http://api.themoviedb.org/3/tv/"+series_id+"/season/"+latest_season+"/episode/"+latest_episode+"?api_key="+MainActivity.api_key;
+                JsonObjectRequest jsonObjectNextRequest = new JsonObjectRequest(Request.Method.GET, url, (String) null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            date = response.getString("air_date");
+                            Toast.makeText(context,""+date+" "+latest_episode+" "+latest_season,Toast.LENGTH_SHORT).show();
+                            DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                            try {
+                                parsed_date = dateFormat.parse(date);
+                            } catch (ParseException e) {e.printStackTrace();}
+                            subscription = new Subscription(series_name,series_id,latest_season,latest_episode,parsed_date);
+                            subscription.save();
+                        }
+                        catch (JSONException e) {e.printStackTrace();}
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+                Volley.newRequestQueue(context).add(jsonObjectNextRequest);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -54,30 +82,10 @@ public class DatabaseUpdater {
 
             }
         });
-        url = "http://api.themoviedb.org/3/tv/"+series_id+"/season/"+latest_season+"/episode/"+latest_episode+"?api_key="+MainActivity.api_key;
-        JsonObjectRequest jsonObjectNextRequest = new JsonObjectRequest(Request.Method.GET, url, (String) null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    String air_date = response.getString("air_date");
-                    DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-                    date = dateFormat.parse(air_date);
-                    //Toast.makeText(context,,Toast.LENGTH_LONG).show();
-                }
-                catch (JSONException e) {e.printStackTrace();}
-                catch (ParseException e) {e.printStackTrace();}
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-
         Volley.newRequestQueue(context).add(jsonObjectRequest);
-        Volley.newRequestQueue(context).add(jsonObjectNextRequest);
-        Toast.makeText(context,""+latest_season+" "+latest_episode,Toast.LENGTH_LONG).show();
-       // subscription = new Subscription(series_name,series_id,latest_season,latest_episode,date);
-       // subscription.save();
+//
+//        //ss
+        // Toast.makeText(context,""+latest_season[0]+" "+latest_episode[0]+parsed_date,Toast.LENGTH_LONG).show();
+       //
     }
 }
