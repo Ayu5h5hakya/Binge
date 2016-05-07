@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/poster"
+        android:scaleType="fitStart"
+        android:adjustViewBounds="true" />
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fab"
+        android:layout_alignBottom="@+id/poster"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="-28dp"
+        android:layout_marginRight="9dp"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/poster">
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:orientation="vertical">
+           <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/title_detail"
+               android:text="Title"
+               android:textStyle="bold"
+               android:padding="5dp"/>
+           <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/overview_detail"
+               android:text="No synopsis yet"
+               android:padding="5dp"/>
+       </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

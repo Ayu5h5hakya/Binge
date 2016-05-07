@@ -1,7 +1,6 @@
 package com.example.ayush.funstuff;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,28 +9,27 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.facebook.stetho.Stetho;
+import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<String> seriesnames;
-    ArrayList<Long> series_ids;
+    ArrayList<String> seriesnames,backpath;
+    ArrayList<Integer> series_ids;
     EditText editText;
     RecyclerView recyclerView;
     ImageView imageView;
@@ -42,40 +40,24 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Stetho.initialize(
+                Stetho.newInitializerBuilder(this)
+                        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                        .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
+                        .build());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         editText = (EditText) findViewById(R.id.namequery);
         recyclerView = (RecyclerView) findViewById(R.id.rv);
-        imageView = (ImageView) findViewById(R.id.subscribed);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
         seriesnames = new ArrayList<>();
+        backpath=new ArrayList<>();
         series_ids = new ArrayList<>();
-        recyclerView.setAdapter(new Adapter(this, seriesnames,series_ids));
+        recyclerView.setAdapter(new Adapter(this, seriesnames,series_ids,backpath));
         editText.addTextChangedListener(textWatcher);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                {
-                    String temp="";
-                    List<Subscription> subscriptions = Subscription.listAll(Subscription.class);
-                    for (int i=0;i<subscriptions.size();++i)
-                    {
-                        temp+=subscriptions.get(i).nameOfSeries+"   "+
-                                subscriptions.get(i).series_id +"   "+
-                                subscriptions.get(i).latest_season+"   "+
-                                subscriptions.get(i).last_episode+"   "+
-                                subscriptions.get(i).last_air_date.toString()+"\n";
-                    }
-                    Toast.makeText(getBaseContext(),""+temp,Toast.LENGTH_SHORT).show();
-
-
-                }
-            }
-        });
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -91,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 String processedquery=s.toString();
                 seriesnames.clear();
                 series_ids.clear();
+                backpath.clear();
                 updateList(processedquery);
             }
 //            else
@@ -149,10 +132,9 @@ public class MainActivity extends AppCompatActivity {
         {
             query=query.replace(' ','+');
         }
-        //String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+query;
         String url = "http://api.themoviedb.org/3/search/tv?api_key=83ef7189721a67650fe8f404af8cf6aa&query="+query;
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, (String)null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url,null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -163,10 +145,10 @@ public class MainActivity extends AppCompatActivity {
                     {
                         response = jsonArray.getJSONObject(i);
                         seriesnames.add(response.getString("name"));
-                        series_ids.add(response.getLong("id"));
-
+                        series_ids.add(response.getInt("id"));
+                        backpath.add(response.getString("backdrop_path"));
                     }
-                    recyclerView.setAdapter(new Adapter(getBaseContext(), seriesnames,series_ids));
+                    recyclerView.setAdapter(new Adapter(getBaseContext(), seriesnames,series_ids,backpath));
                 }
                 catch (JSONException e) {e.printStackTrace();}
             }
@@ -178,5 +160,4 @@ public class MainActivity extends AppCompatActivity {
         });
         Volley.newRequestQueue(this).add(jsonObjectRequest);
     }
-
 }

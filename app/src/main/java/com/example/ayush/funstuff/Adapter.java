@@ -2,34 +2,41 @@ package com.example.ayush.funstuff;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Collections;
+
+import io.realm.Realm;
 
 /**
  * Created by ayush on 2/28/16.
  */
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     LayoutInflater layoutInflater;
-    ArrayList<String> seriesnames;
-    ArrayList<Long> seriesids;
+    ArrayList<String> seriesnames,backpath;
+    ArrayList<Integer> seriesids;
     Context context;
-    DatabaseUpdater databaseUpdater=null;
-    public Adapter(Context context,ArrayList<String> seriesnames,ArrayList<Long> series_ids){
+    DatabaseController databaseController=null;
+
+    public Adapter(Context context,ArrayList<String> seriesnames,ArrayList<Integer> series_ids,ArrayList<String> backpath){
         layoutInflater = LayoutInflater.from(context);
         this.seriesnames = seriesnames;
         this.context = context;
         this.seriesids = series_ids;
-        if(databaseUpdater==null)
-        {
-            databaseUpdater = new DatabaseUpdater(context);
-        }
+        this.backpath=backpath;
+        if (databaseController==null) {databaseController = new DatabaseController(context);}
     }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -57,8 +64,14 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            //Toast.makeText(context,""+seriesids.get(getAdapterPosition()),Toast.LENGTH_SHORT).show();
-            databaseUpdater.update(textView.getText().toString(),seriesids.get(getAdapterPosition()));
+            Toast.makeText(context,""+seriesids.get(getAdapterPosition()),Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent("com.example.ayush.funstuff.SeriesDetails");
+            intent.putExtra("back_path",backpath.get(getAdapterPosition()));
+            intent.putExtra("id",seriesids.get(getAdapterPosition()));
+            intent.putExtra("seriesname",seriesnames.get(getAdapterPosition()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+            //databaseController.updateDatabase(seriesids.get(getAdapterPosition()),seriesnames.get(getAdapterPosition()));
         }
     }
 }
