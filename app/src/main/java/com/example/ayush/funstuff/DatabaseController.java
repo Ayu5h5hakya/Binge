@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * Created by Ayush on 5/6/2016.
@@ -26,43 +27,25 @@ public class DatabaseController {
     private Context context;
     private int latest_episode=-1;
     private Realm realm=null;
-    public DatabaseController(Context context)
+    public DatabaseController(Context context,Realm realm)
     {
         this.context=context;
-        if(realm==null) realm=Realm.getInstance(context);
+        this.realm = realm;
     }
-    public void updateDatabase(final Integer series_id, final String series_name)
+    public void updateDatabase(String id,String name,int latest_season,int latest_episode,String details)
     {
-        String url = new_series_url+series_id+"?api_key="+MainActivity.api_key;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, (JSONObject)null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try
-                {
-                    JSONObject jsonObject;
-                    latest_season=response.getInt("number_of_seasons");
-                    String seasons_info=response.getString("seasons");
-                    JSONArray jsonArray=new JSONArray(seasons_info);
-                    jsonObject=jsonArray.getJSONObject(jsonArray.length()-1);
-                    latest_episode=jsonObject.getInt("episode_count");
-
-                    realm.beginTransaction();
-                        Subscription newSubscription=realm.createObject(Subscription.class);
-                        newSubscription.setNameOfSeries(series_name);
-                        newSubscription.setSeries_id(series_id);
-                        newSubscription.setLatest_season(latest_season);
-                        newSubscription.setLast_episode(latest_episode);
-                    realm.commitTransaction();
-                }
-                catch (JSONException e) {}
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context,error.getMessage(),Toast.LENGTH_SHORT).show();
-            }
-        });
-        Volley.newRequestQueue(context).add(jsonObjectRequest);
+        RealmResults<Subscription> realmResults = realm.where(Subscription.class).contains("series_id",id).findAll();
+        if(realmResults.size()!=0) {
+            Toast.makeText(context,"You have already subscribed to this series",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        realm.beginTransaction();
+        Subscription newSubscription = realm.createObject(Subscription.class);
+        newSubscription.setSeries_id(id);
+        newSubscription.setNameOfSeries(name);
+        newSubscription.setLatest_season(latest_season);
+        newSubscription.setLast_episode(latest_episode);
+        newSubscription.setAdditionalInformation(details);
+        realm.commitTransaction();
     }
 }

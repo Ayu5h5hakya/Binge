@@ -37,6 +37,20 @@
                android:id="@+id/overview_detail"
                android:text="No synopsis yet"
                android:padding="5dp"/>
+           <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/season_count"
+               android:padding="5dp"
+               android:text="Latest Season :"
+               android:textStyle="bold"/>
+            <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/episode_number"
+               android:padding="5dp"
+               android:text="Latest Episode :"
+               android:textStyle="bold" />
        </LinearLayout>
     </ScrollView>
 

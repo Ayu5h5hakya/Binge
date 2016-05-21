@@ -1,6 +1,8 @@
 package com.example.ayush.funstuff;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -26,6 +29,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import io.realm.Realm;
+
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> seriesnames,backpath;
@@ -35,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     Subscription subscription;
     static String api_key = "83ef7189721a67650fe8f404af8cf6aa";
+    FloatingActionButton fab;
+    public static Realm realm=null;
+    public static DatabaseController databaseController = null;
+    public static String directory = "Binge";
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -50,7 +59,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         editText = (EditText) findViewById(R.id.namequery);
         recyclerView = (RecyclerView) findViewById(R.id.rv);
+        fab = (FloatingActionButton) findViewById(R.id.s_fab);
 
+        realm =Realm.getInstance(this);
+        databaseController = new DatabaseController(this,realm);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
         seriesnames = new ArrayList<>();
@@ -58,6 +70,14 @@ public class MainActivity extends AppCompatActivity {
         series_ids = new ArrayList<>();
         recyclerView.setAdapter(new Adapter(this, seriesnames,series_ids,backpath));
         editText.addTextChangedListener(textWatcher);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent("com.example.ayush.funstuff.Serieslist");
+                startActivity(intent);
+            }
+        });
     }
 
     private TextWatcher textWatcher = new TextWatcher() {

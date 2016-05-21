@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "384766124801",
+    "project_id": "binge-24fa0"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:384766124801:android:8636c52f06ef47bc",
+        "android_client_info": {
+          "package_name": "com.android.ayush"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDD0HgE31moAE4DnJf_7MOGkVA1nNF2cpo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
